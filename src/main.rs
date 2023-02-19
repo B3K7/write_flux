@@ -1,5 +1,6 @@
 /* infx_w/src/main/rs. */
 
+use clap::Parser;
 use influxdb2;
 use futures::executor::block_on;
 use reqwest::Error;
@@ -7,6 +8,15 @@ use std::time::SystemTime;
 use std::fs;
 use std::convert::TryFrom;
 use serde_derive::{Deserialize, Serialize};
+
+/// Sends point to influxdb2
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+   /// database filename
+   #[arg(short, long)]
+   influx_db_json: String,
+}
 
 #[derive(Deserialize, Serialize, Debug)]
 struct FlxStruct {
@@ -16,7 +26,7 @@ struct FlxStruct {
     bucket : String,
 }
 
-async fn example( url : &str, org : &str,  token : &str,  bucket : &str, topic : &str, tagunits : &str, tag : &str,  units  : &str, measure  : f64, dur : &std::time::Duration ) -> Result<(), Box<dyn std::error::Error>> {
+async fn wr_nflx_msg( url : &str, org : &str,  token : &str,  bucket : &str, topic : &str, tagunits : &str, tag : &str,  units  : &str, measure  : f64, dur : &std::time::Duration ) -> Result<(), Box<dyn std::error::Error>> {
     use futures::prelude::*;
     use influxdb2::models::DataPoint;
     use influxdb2::Client;
@@ -59,7 +69,10 @@ async fn example( url : &str, org : &str,  token : &str,  bucket : &str, topic :
 
 #[tokio::main]
 async fn main() -> Result<(), Error>  {
-    let input_path = "./nfx.db";
+    /* main routine */
+    let args = Args::parse();
+
+    let input_path = args.influx_db_json;
 
     let nfx_db = {
         let nfx_db = fs::read_to_string(&input_path)
@@ -79,7 +92,7 @@ async fn main() -> Result<(), Error>  {
         Err(_) => panic!("Now outside LOQ."),
     };
 
-    let _my_result = block_on(example(&nfx_db.url, &nfx_db.org, &nfx_db.token, &nfx_db.bucket, &topic, &tagunits, & tag, &units, measure, &now_dur));
+    let _my_result = block_on(wr_nflx_msg(&nfx_db.url, &nfx_db.org, &nfx_db.token, &nfx_db.bucket, &topic, &tagunits, & tag, &units, measure, &now_dur));
 
     Ok(())
 }

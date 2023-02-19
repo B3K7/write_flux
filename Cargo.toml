@@ -1,6 +1,6 @@
 [package]
 name        = "write_avail"
-version     = "0.0.1"
+version     = "0.0.2"
 keywords    = ["influxdb", "influxdb2", "influxdb-client"]
 description = "Influxdb2 point client"
 edition     = "2021"
@@ -19,16 +19,15 @@ default     = ["native-tls"]
 native-tls  = ["reqwest/native-tls"]
 rustls      = ["reqwest/rustls-tls"]
 
-
 [dependencies] # In alphabetical order
+clap          = { version = "4.1.6", features = ["derive", "cargo"] }
 futures       = { version = "0.3" }
 influxdb2     = { version = "0.3", features = ["rustls"], default-features = false }
+nom           = "7.1.3"
+opentelemetry = "0.18"
 prelude       = { version = "0.2" }
 reqwest       = { version = "0.11" , features = ["blocking"] }
 serde         = "1.0.152"
 serde_derive  = "1.0.152"
 serde_json    = "1.0.93"
 tokio         = { version = "1.25", features = ["full"]  }
-opentelemetry = "0.18"
-nom           = "7.1.3"
-clap          = { version = "4.1.6", features = ["derive", "cargo"] }

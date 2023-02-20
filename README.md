@@ -5,6 +5,7 @@ cargo build --release
 
 ## Help
 ./write_avail --help
+```
 Influxdb2 point client
 
 Usage: write_avail --target-json <TARGET_JSON> --measurement-json <MEASUREMENT_JSON>
@@ -14,6 +15,7 @@ Options:
   -m, --measurement-json <MEASUREMENT_JSON>  influx measurements
   -h, --help                                 Print help
   -V, --version                              Print version
+```
 
 ## Optimization Notes
 

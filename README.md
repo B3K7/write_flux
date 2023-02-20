@@ -1,5 +1,5 @@
 # infx_w client
-The [Influx writer client](https://github.com/B3K7/infx_w) is an alternative to the [Telegraf agent](https://github.com/influxdata/telegraf).  
+The [Influx writer client](https://github.com/B3K7/infx_w) is a rust based alternative to the [Telegraf agent](https://github.com/influxdata/telegraf).  
    - The Influx writer client depends on the [Influxdb2 rust client](https://github.com/aprimadi/influxdb2)
       - The Influxdb2 rust client depends on the [Open-Telementry toolkit](https://github.com/open-telemetry/opentelemetry-rust); and, 
       - The Influxdb2 rust client makes use of the [influxdb 2.0 API](https://docs.influxdata.com/influxdb/v2.0/reference/api/)

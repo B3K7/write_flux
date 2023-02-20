@@ -17,7 +17,7 @@ Options:
 
 ## Optimization Notes
 
-### 1st pass Duty Cycle optimization
+### 1st pass Core/Duty Cycle Optimization
 time ./write_avail -t ./nfx.db.json -m ./measurements.1k.json
 ```
 real    0m0.313s
@@ -25,7 +25,7 @@ user    0m0.016s
 sys     0m0.010s
 ```
 
-### 1st pass Network optimization
+### 1st pass Network Interface Optimization
 strace -r -e recvfrom,sendto ./write_avail -t ./nfx.db.json -m ./measurements.2.json
 ```
      0.000000 sendto(9, "\26\3\1\2\0\1\0\1\374\3\3[\341\241OfuyB\334\231YyF\230\24\246#5\ru\376"..., 517, MSG_NOSIGNAL, NULL, 0) = 517
@@ -45,7 +45,7 @@ strace -r -e recvfrom,sendto ./write_avail -t ./nfx.db.json -m ./measurements.2.
      0.120964 +++ exited with 0 +++
 ```
 
-### 1st pass Memory optimization
+### 1st pass Memory Subsystem Optimization
 strace -r ./write_avail   -t ./nfx.db.json -m ./measurements.2.json 2>&1 | grep -e mmap -e brk
 ```
      0.001019 brk(NULL)                 = 0x5630841b5000

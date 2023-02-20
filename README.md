@@ -1,4 +1,6 @@
 # infx_w client
+The influx writer client depends on the [Influxdb2 client](https://github.com/aprimadi/influxdb2) which depends on the [influxdb 2.0 API](https://docs.influxdata.com/influxdb/v2.0/reference/api/) which relies on the InfluxDB [open source time series platform](https://github.com/influxdata/influxdb).
+
 
 ## build instructions
 cargo build --release

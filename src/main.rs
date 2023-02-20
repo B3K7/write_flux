@@ -1,21 +1,21 @@
 /* infx_w/src/main/rs. */
 
 use clap::Parser;
-use influxdb2;
 use futures::executor::block_on;
 use reqwest::Error;
-use std::time::SystemTime;
 use std::fs;
-use std::convert::TryFrom;
 use serde_derive::{Deserialize, Serialize};
 
-/// Sends point to influxdb2
+/// Send point measurement(s) to influxdb2 target
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-   /// database filename
+   /// endpoint target
    #[arg(short, long)]
-   influx_db_json: String,
+   target_json: String,
+   /// influx measurements
+   #[arg(short, long)]
+   measurement_json: String,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -26,43 +26,53 @@ struct FlxStruct {
     bucket : String,
 }
 
-async fn wr_nflx_msg( url : &str, org : &str,  token : &str,  bucket : &str, topic : &str, tagunits : &str, tag : &str,  units  : &str, measure  : f64, dur : &std::time::Duration ) -> Result<(), Box<dyn std::error::Error>> {
+#[derive(Debug, Serialize, Deserialize)]
+struct DataStruct {
+    tag    : String,
+    measure: f64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct MeasureStruct {
+    topic: String,
+    tagunits: String,
+    units: String,
+    _records: Vec<DataStruct>,
+}
+
+async fn wr_nflx_msg( target_path : &str, measurement_path : &str ) -> Result<(), Box<dyn std::error::Error>> {
+
     use futures::prelude::*;
     use influxdb2::models::DataPoint;
     use influxdb2::Client;
 
-    let t_units  = "sec";
-    let u_secs :u64 = dur.as_secs();
-    let secs   :i64   = match i64::try_from(u_secs) {
-        Ok(n) => n,
-        Err(_) => panic!("seconds outside LOQ."),
+    //target endpoint
+    let endpoint = {
+        let endpoint = fs::read_to_string(target_path)
+            .expect("Unable to read file");
+        serde_json::from_str::<FlxStruct>(&endpoint).unwrap()
     };
 
-    const BILLION :u128  = 1_000_000_000u128;
-    let nu_secs : u128 = match u128::try_from(u_secs) {
-        Ok(n) => n*BILLION ,
-        Err(_) => panic!("nu_sec outside LOQ."),
+    let client = Client::new(&endpoint.url, &endpoint.org, &endpoint.token);
+
+    let measurement = {
+        let measurement = fs::read_to_string(measurement_path)
+            .expect("Unable to read file");
+        serde_json::from_str::<MeasureStruct>(&measurement).unwrap()
     };
 
-    let n_units  = "nsec";
-    let u_nanos :u128 = dur.as_nanos() ;
-    let nanos   :i64  = match i64::try_from(u_nanos - nu_secs ) {
-        Ok(n) => n,
-        Err(_) => panic!("nanoseconds outside LOQ."),
-    };
+    let mut points = Vec::new();
 
-    let client = Client::new(url, org, token);
+    for iter in &measurement._records {
+        let point =
+            DataPoint::builder(&measurement.topic)
+                .tag(  &measurement.tagunits, &iter.tag)
+                .field(&measurement.units,    iter.measure)
+                .build()?;
+        points.push(point);
+    }
 
-    let points = vec![
-        DataPoint::builder(topic)
-            .tag(tagunits, tag)
-            .field(units, measure)
-            .field(t_units, secs )
-            .field(n_units, nanos )
-            .build()?
-    ];
-
-    client.write(bucket, stream::iter(points)).await?;
+    client.write(&endpoint.bucket, stream::iter(points)).await?;
 
     Ok(())
 }
@@ -70,29 +80,12 @@ async fn wr_nflx_msg( url : &str, org : &str,  token : &str,  bucket : &str, top
 #[tokio::main]
 async fn main() -> Result<(), Error>  {
     /* main routine */
+
     let args = Args::parse();
+    let target_path = args.target_json;
+    let measurement_path = args.measurement_json;
 
-    let input_path = args.influx_db_json;
-
-    let nfx_db = {
-        let nfx_db = fs::read_to_string(&input_path)
-            .expect("Unable to read file");
-
-        serde_json::from_str::<FlxStruct>(&nfx_db).unwrap()
-    };
-
-    let topic    = "Avail2";
-    let tagunits = "site";
-    let tag      = "01";
-    let units    = "avail";
-    let measure  = 1.0;
-
-    let now_dur = match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
-        Ok(n) => n,
-        Err(_) => panic!("Now outside LOQ."),
-    };
-
-    let _my_result = block_on(wr_nflx_msg(&nfx_db.url, &nfx_db.org, &nfx_db.token, &nfx_db.bucket, &topic, &tagunits, & tag, &units, measure, &now_dur));
+    let _my_result = block_on(wr_nflx_msg(&target_path, &measurement_path));
 
     Ok(())
 }

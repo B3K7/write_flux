@@ -1,9 +1,9 @@
 # infx_w client
 
-# build instructions
+## build instructions
 cargo build --release
 
-#help
+## Help
 ./write_avail --help
 Influxdb2 point client
 
@@ -15,15 +15,19 @@ Options:
   -h, --help                                 Print help
   -V, --version                              Print version
 
-# 1st pass Duty Cycle optimization
-time ./write_avail -t ./nfx.db.json -m ./measurements.1k.json
+## Optimization Notes
 
+### 1st pass Duty Cycle optimization
+time ./write_avail -t ./nfx.db.json -m ./measurements.1k.json
+```
 real    0m0.313s
 user    0m0.016s
 sys     0m0.010s
+```
 
-# 1st pass Network optimization
+### 1st pass Network optimization
 strace -r -e recvfrom,sendto ./write_avail -t ./nfx.db.json -m ./measurements.2.json
+```
      0.000000 sendto(9, "\26\3\1\2\0\1\0\1\374\3\3[\341\241OfuyB\334\231YyF\230\24\246#5\ru\376"..., 517, MSG_NOSIGNAL, NULL, 0) = 517
      0.032285 recvfrom(9, "\26\3\3\0z", 5, 0, NULL, NULL) = 5
      0.000448 recvfrom(9, "\2\0\0v\3\3 3#Dx[\263\326\235\311<w\272\255n\326\317\333z\302-\7\34/e\315"..., 122, 0, NULL, NULL) = 122
@@ -39,9 +43,11 @@ strace -r -e recvfrom,sendto ./write_avail -t ./nfx.db.json -m ./measurements.2.
      0.000505 recvfrom(9, "aL\3308\25\204\363\332\361\313\202\257\213i\224\272\340\10\f\266\253\337/ \223ZMw\301\331Y\213"..., 69, 0, NULL, NULL) = 69
      0.000552 sendto(9, "\24\3\3\0\1\1\27\3\3\0E\316\207\6\321\5w6\243\327\0046\343\310\206\313\357]\362\215y\223"..., 80, MSG_NOSIGNAL, NULL, 0) = 80
      0.120964 +++ exited with 0 +++
+```
 
-# 1st pass Memory optimization
+### 1st pass Memory optimization
 strace -r ./write_avail   -t ./nfx.db.json -m ./measurements.2.json 2>&1 | grep -e mmap -e brk
+```
      0.001019 brk(NULL)                 = 0x5630841b5000
      0.000193 mmap(NULL, 34603, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f2185868000
      0.000089 mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f2185866000
@@ -107,3 +113,4 @@ strace -r ./write_avail   -t ./nfx.db.json -m ./measurements.2.json 2>&1 | grep 
      0.000436 brk(0x563084418000)       = 0x563084418000
      0.000605 mmap(NULL, 2101248, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0x7f2184773000
      0.000270 brk(0x56308443c000)       = 0x56308443c000
+```     

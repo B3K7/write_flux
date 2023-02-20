@@ -63,13 +63,20 @@ async fn wr_nflx_msg( target_path : &str, measurement_path : &str ) -> Result<()
 
     let mut points = Vec::new();
 
+    // to-do: replace with iter filter map collect ?
+    // ref: https://users.rust-lang.org/t/push-vector-in-a-loop/7992/2 
     for iter in &measurement._records {
+        // specify element lifetime as per 
+        // ref: https://mobiarch.wordpress.com/2015/06/29/understanding-lifetime-in-rust-part-i/
+       
+
         let point =
             DataPoint::builder(&measurement.topic)
                 .tag(  &measurement.tagunits, &iter.tag)
                 .field(&measurement.units,    iter.measure)
-                .build()?;
-        points.push(point);
+                .build()
+                .unwrap();
+        points.push(point.to_owned());
     }
 
     client.write(&endpoint.bucket, stream::iter(points)).await?;

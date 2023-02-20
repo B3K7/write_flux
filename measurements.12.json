@@ -1,0 +1,44 @@
+{
+        "topic"    : "Avail",
+        "tagunits" : "site",
+        "units"    : "avail",
+        "_records" : [
+                { "tag" : "01",
+                 "measure" : 1
+                },
+                { "tag" : "02",
+                 "measure" : 1
+                },
+                { "tag" : "03",
+                 "measure" : 1
+                },
+                { "tag" : "04",
+                 "measure" : 1
+                },
+                { "tag" : "05",
+                 "measure" : 1
+                },
+                { "tag" : "06",
+                 "measure" : 1
+                },
+                { "tag" : "07",
+                 "measure" : 1
+                },
+                { "tag" : "08",
+                 "measure" : 1
+                },
+                { "tag" : "09",
+                 "measure" : 1
+                },
+                { "tag" : "10",
+                 "measure" : 1
+                },
+                { "tag" : "11",
+                 "measure" : 1
+                },
+                { "tag" : "12",
+                 "measure" : 1
+                }
+        ]
+
+}

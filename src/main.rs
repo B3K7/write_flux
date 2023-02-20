@@ -29,7 +29,7 @@ struct FlxStruct {
 #[derive(Debug, Serialize, Deserialize)]
 struct DataStruct {
     tag    : String,
-    measure: f64,
+    measure: i64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -63,25 +63,17 @@ async fn wr_nflx_msg( target_path : &str, measurement_path : &str ) -> Result<()
 
     let mut points = Vec::new();
 
-    // to-do: replace with iter filter map collect ?
-    // ref: https://users.rust-lang.org/t/push-vector-in-a-loop/7992/2 
     for iter in &measurement._records {
-        // specify element lifetime as per 
-        // ref: https://mobiarch.wordpress.com/2015/06/29/understanding-lifetime-in-rust-part-i/
-       
-
-        let point =
-            DataPoint::builder(&measurement.topic)
-                .tag(  &measurement.tagunits, &iter.tag)
-                .field(&measurement.units,    iter.measure)
+        let point : DataPoint =
+            DataPoint::builder(&measurement.topic.clone())
+                .tag(  measurement.tagunits.clone(), iter.tag.clone())
+                .field(measurement.units.clone(),    iter.measure)
                 .build()
                 .unwrap();
         points.push(point.to_owned());
     }
 
-    client.write(&endpoint.bucket, stream::iter(points)).await?;
-
-    Ok(())
+    Ok(client.write(&endpoint.bucket, stream::iter(points)).await?)
 }
 
 #[tokio::main]
@@ -92,7 +84,8 @@ async fn main() -> Result<(), Error>  {
     let target_path = args.target_json;
     let measurement_path = args.measurement_json;
 
-    let _my_result = block_on(wr_nflx_msg(&target_path, &measurement_path));
+    let my_result = block_on(wr_nflx_msg(&target_path, &measurement_path));
 
+    my_result.unwrap();
     Ok(())
 }

@@ -1,6 +1,6 @@
 [package]
 name        = "write_avail"
-version     = "0.0.2"
+version     = "0.0.3"
 keywords    = ["influxdb", "influxdb2", "influxdb-client"]
 description = "Influxdb2 point client"
 edition     = "2021"
@@ -9,6 +9,7 @@ edition     = "2021"
 # https://github.com/johnthagen/min-sized-rust
 strip = true               # strip symbols
 opt-level = "z"            # optimize for size
+#opt-level =  3            # optimize for preformance
 lto = "fat"                # Link-time optimization (LTO)
 codegen-units = 1          # Sequential Link-time optimization
 target-cpu="native"        # Target the native CPU
@@ -30,4 +31,5 @@ reqwest       = { version = "0.11" , features = ["blocking"] }
 serde         = "1.0.152"
 serde_derive  = "1.0.152"
 serde_json    = "1.0.93"
+serde_yaml    = "0.9.17"
 tokio         = { version = "1.25", features = ["full"]  }

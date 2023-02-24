@@ -1,5 +1,5 @@
 [package]
-name        = "write_avail"
+name        = "write_flux"
 version     = "0.0.3"
 keywords    = ["influxdb", "influxdb2", "influxdb-client"]
 description = "Influxdb2 point client"

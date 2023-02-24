@@ -1,4 +1,4 @@
-/* infx_w/src/main/rs. */
+/* flux_write/src/main.rs */
 
 use clap::Parser;
 use futures::executor::block_on;

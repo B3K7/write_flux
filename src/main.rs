@@ -1,4 +1,4 @@
-/* flux_write/src/main.rs */
+/* write_flux/src/main.rs */
 
 use clap::Parser;
 use futures::executor::block_on;

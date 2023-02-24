@@ -1,4 +1,4 @@
-# flux_write client
+# write_flux client
 The [Influx writer client](https://github.com/B3K7/infx_w) is a rust based alternative to the [Telegraf agent](https://github.com/influxdata/telegraf).  
    - The Influx writer client depends on a number of configuration items including the [Influxdb2 rust client](https://github.com/aprimadi/influxdb2)
       - The Influxdb2 rust client depends on the [Open-Telementry toolkit](https://github.com/open-telemetry/opentelemetry-rust); and, 
@@ -9,7 +9,7 @@ The [Influx writer client](https://github.com/B3K7/infx_w) is a rust based alter
 cargo build --release
 
 ## Help
-./flux_write --help
+./write_flux --help
 ```
 Influxdb2 point client
 
@@ -25,7 +25,7 @@ Options:
 ## Optimization Notes
 
 ### 1st pass Core/Duty Cycle Optimization
-time ./flux_write -t ./nfx.db.json -m ./measurements.1k.json
+time ./write_flux -t ./nfx.db.json -m ./measurements.1k.json
 ```
 real    0m0.313s
 user    0m0.016s
@@ -33,7 +33,7 @@ sys     0m0.010s
 ```
 
 ### 1st pass Network Interface Optimization
-strace -r -e recvfrom,sendto ./flux_write -t ./nfx.db.json -m ./measurements.2.json
+strace -r -e recvfrom,sendto ./write_flux -t ./nfx.db.json -m ./measurements.2.json
 ```
      0.000000 sendto(9, "\26\3\1\2\0\1\0\1\374\3\3[\341\241OfuyB\334\231YyF\230\24\246#5\ru\376"..., 517, MSG_NOSIGNAL, NULL, 0) = 517
      0.032285 recvfrom(9, "\26\3\3\0z", 5, 0, NULL, NULL) = 5
@@ -53,7 +53,7 @@ strace -r -e recvfrom,sendto ./flux_write -t ./nfx.db.json -m ./measurements.2.j
 ```
 
 ### 1st pass Memory Subsystem Optimization
-strace -r ./flux_write   -t ./nfx.db.json -m ./measurements.2.json 2>&1 | grep -e mmap -e brk
+strace -r ./write_flux   -t ./nfx.db.json -m ./measurements.2.json 2>&1 | grep -e mmap -e brk
 ```
      0.001019 brk(NULL)                 = 0x5630841b5000
      0.000193 mmap(NULL, 34603, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f2185868000

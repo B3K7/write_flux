@@ -5,13 +5,14 @@ The [Write Flux client](https://github.com/B3K7/infx_w) is a rust based alternat
       - The Influxdb2 rust client makes use of the [Influxdb 2.0 API](https://docs.influxdata.com/influxdb/v2.0/reference/api/)
          - The Influx 2.0 API  relies on the [InfluxDB open source time series platform](https://github.com/influxdata/influxdb)
 
-# About Influx
+# About InfluxDb
  Influx uses Log structured Merge(LSM) Trees.  Used properly, LSM(s) can delivery durability and high-write throughput.
  
  For more information on LSM trees, please consult:
   - [ben stopford's paper on LSM(s)](http://www.benstopford.com/2015/02/14/log-structured-merge-trees/); and,
   - [John Pradeep Vincent's article on LSM(s)](https://medium.com/swlh/log-structured-merge-trees-9c8e2bea89e8)
 
+* * Please note: It is recommended that database technologies be aligned with the environment in question. * * 
 
 ## build instructions
 cargo build --release

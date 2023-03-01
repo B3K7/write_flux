@@ -1,4 +1,4 @@
-/* write_flux/src/main/rs. */
+/* write_flux/src/main.rs. */
 
 use clap::Parser;
 use futures::executor::block_on;
@@ -89,6 +89,7 @@ async fn wr_nflx_msg( target_path : &str, measurement_path : &str ) -> Result<()
                     .build()
                     .unwrap();
             points.push(point.to_owned());
+            //println!("point vec: {:#?}", &point)
 
         }
     }

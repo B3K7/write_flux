@@ -12,7 +12,7 @@ The [Write Flux client](https://github.com/B3K7/infx_w) is a rust based alternat
  For more information, please consult:
   - [Ben Stopford's paper on LSM(s)](http://www.benstopford.com/2015/02/14/log-structured-merge-trees/); and,
   - [John Pradeep Vincent's article on LSM(s)](https://medium.com/swlh/log-structured-merge-trees-9c8e2bea89e8)
-  - [Adam Jacobs article on big data](https://queue.acm.org/detail.cfm?id=1563874)
+  - [Adam Jacobs article's on big data](https://queue.acm.org/detail.cfm?id=1563874)
 
 
 ## build instructions

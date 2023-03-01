@@ -37,9 +37,9 @@ Options:
 ### 1st pass Core/Duty Cycle Optimization
 time ./write_flux -t ./nfx.db.json -m ./measurements.1k.json
 ```
-real    0m0.313s
-user    0m0.016s
-sys     0m0.010s
+real    0m0.234s
+user    0m0.020s
+sys     0m0.007s
 ```
 
 ### 1st pass Network Interface Optimization

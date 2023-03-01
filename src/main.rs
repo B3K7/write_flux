@@ -1,6 +1,7 @@
 /* write_flux/src/main.rs. */
 
 use clap::Parser;
+use clap_verbosity_flag::Verbosity;
 use futures::executor::block_on;
 use reqwest::Error;
 use std::fs;
@@ -17,6 +18,8 @@ struct Args {
    /// influx measurements
    #[arg(short, long)]
    measurement_json: String,
+   #[clap(flatten)]
+   verbose: Verbosity,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -89,11 +92,13 @@ async fn wr_nflx_msg( target_path : &str, measurement_path : &str ) -> Result<()
                     .build()
                     .unwrap();
             points.push(point.to_owned());
-            //println!("point vec: {:#?}", &point)
 
         }
     }
 
+    // emit debug
+
+   log::debug!("point vec: {:#?}", &points);
     //send message
     Ok(client.write(&endpoint.bucket, stream::iter(points)).await?)
 }
@@ -101,10 +106,13 @@ async fn wr_nflx_msg( target_path : &str, measurement_path : &str ) -> Result<()
 #[tokio::main]
 async fn main() -> Result<(), Error>  {
     /* main routine */
-
     let args = Args::parse();
     let target_path = args.target_json;
     let measurement_path = args.measurement_json;
+
+    env_logger::Builder::new()
+        .filter_level(args.verbose.log_level_filter())
+        .init();
 
     //write message
     let my_result = block_on(wr_nflx_msg(&target_path, &measurement_path));

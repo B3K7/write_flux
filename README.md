@@ -17,15 +17,17 @@ The [Write Flux client](https://github.com/B3K7/infx_w) is a rust based alternat
 cargo build --release
 
 ## Help
-./write_flux --help
+$ ./write_flux --help
 ```
 Influxdb2 point client
 
-Usage: flux_write --target-json <TARGET_JSON> --measurement-json <MEASUREMENT_JSON>
+Usage: write_flux [OPTIONS] --target-json <TARGET_JSON> --measurement-json <MEASUREMENT_JSON>
 
 Options:
   -t, --target-json <TARGET_JSON>            endpoint target
   -m, --measurement-json <MEASUREMENT_JSON>  influx measurements
+  -v, --verbose...                           More output per occurrence
+  -q, --quiet...                             Less output per occurrence
   -h, --help                                 Print help
   -V, --version                              Print version
 ```
@@ -43,116 +45,132 @@ sys     0m0.010s
 ### 1st pass Network Interface Optimization
 strace -r -e recvfrom,sendto ./write_flux -t ./nfx.db.json -m ./measurements.2.json
 ```
-     0.000000 sendto(9, "\26\3\1\2\0\1\0\1\374\3\3[\341\241OfuyB\334\231YyF\230\24\246#5\ru\376"..., 517, MSG_NOSIGNAL, NULL, 0) = 517
-     0.032285 recvfrom(9, "\26\3\3\0z", 5, 0, NULL, NULL) = 5
-     0.000448 recvfrom(9, "\2\0\0v\3\3 3#Dx[\263\326\235\311<w\272\255n\326\317\333z\302-\7\34/e\315"..., 122, 0, NULL, NULL) = 122
-     0.000674 recvfrom(9, "\24\3\3\0\1", 5, 0, NULL, NULL) = 5
-     0.000336 recvfrom(9, "\1", 1, 0, NULL, NULL) = 1
-     0.000165 recvfrom(9, "\27\3\3\0\33", 5, 0, NULL, NULL) = 5
-     0.000221 recvfrom(9, "\21\321\6\242\361\r\357\3303\240i\364?\333\f\362\235}\f)8@\316HTeK", 27, 0, NULL, NULL) = 27
-     0.000191 recvfrom(9, "\27\3\3\17\374", 5, 0, NULL, NULL) = 5
-     0.000098 recvfrom(9, "\3 Z8\35\232\341)\264\2\27\312\26\300{ANg\n\261\2504,x\361w\356 \204K\343\334"..., 4092, 0, NULL, NULL) = 4092
-     0.001931 recvfrom(9, "\27\3\3\1\31", 5, 0, NULL, NULL) = 5
-     0.000110 recvfrom(9, "T\352e \2\376\371\370\201\367j\245\237\23$\6\271[\300\216\305\255d\231\3739z\7\234\303\306\37"..., 281, 0, NULL, NULL) = 281
-     0.000260 recvfrom(9, "\27\3\3\0E", 5, 0, NULL, NULL) = 5
-     0.000505 recvfrom(9, "aL\3308\25\204\363\332\361\313\202\257\213i\224\272\340\10\f\266\253\337/ \223ZMw\301\331Y\213"..., 69, 0, NULL, NULL) = 69
-     0.000552 sendto(9, "\24\3\3\0\1\1\27\3\3\0E\316\207\6\321\5w6\243\327\0046\343\310\206\313\357]\362\215y\223"..., 80, MSG_NOSIGNAL, NULL, 0) = 80
-     0.120964 +++ exited with 0 +++
+     0.000000 sendto(9, "\26\3\1\2\0\1\0\1\374\3\3\270\303I\266\204\225\0\234\342\265\275\307\251\30g\3\354\344J\322\344"..., 517, MSG_NOSIGNAL, NULL, 0) = 517
+     0.035998 recvfrom(9, "\26\3\3\0z", 5, 0, NULL, NULL) = 5
+     0.000417 recvfrom(9, "\2\0\0v\3\3\376\365\256R\353\352\365w\363\355\303Vj\37\2523\235P\247\251dd]C\342\30"..., 122, 0, NULL, NULL) = 122
+     0.000765 recvfrom(9, "\24\3\3\0\1", 5, 0, NULL, NULL) = 5
+     0.000309 recvfrom(9, "\1", 1, 0, NULL, NULL) = 1
+     0.000271 recvfrom(9, "\27\3\3\0\33", 5, 0, NULL, NULL) = 5
+     0.000099 recvfrom(9, "\370\207\333\302\335It\2573\352@`UM\177\327\210z\275\32Ad\367\362\271U\233", 27, 0, NULL, NULL) = 27
+     0.000379 recvfrom(9, "\27\3\3\17\374", 5, 0, NULL, NULL) = 5
+     0.000143 recvfrom(9, "Y\225G\221\234\374M^C\232\320\247\376y\332\245a\251\270\253\273\26\205c\211.\352!}\2\327y"..., 4092, 0, NULL, NULL) = 4092
+     0.002014 recvfrom(9, "\27\3\3\1\31", 5, 0, NULL, NULL) = 5
+     0.000163 recvfrom(9, "Y8\377B\320!\312\303\320U\221\301\255,\f\303\314\315K\3452\215\307\364\331{_\4!\20w\177"..., 281, 0, NULL, NULL) = 281
+     0.000281 recvfrom(9, "\27\3\3\0E", 5, 0, NULL, NULL) = 5
+     0.000106 recvfrom(9, ">\351I7\372L51\27\315\10\363F\365\22\244=\330=\342\236\27\302g\226\371\350\277o\226\246\306"..., 69, 0, NULL, NULL) = 69
+     0.000299 sendto(9, "\24\3\3\0\1\1\27\3\3\0E\2668\366\320kq'#\260L\346dW\24\177\241^O\342\236\t"..., 80, MSG_NOSIGNAL, NULL, 0) = 80
+     0.087497 +++ exited with 0 +++
 ```
 
 ### 1st pass Memory Subsystem Optimization
 strace -r ./write_flux   -t ./nfx.db.json -m ./measurements.2.json 2>&1 | grep -e mmap -e brk
 ```
-     0.001019 brk(NULL)                 = 0x5630841b5000
-     0.000193 mmap(NULL, 34603, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f2185868000
-     0.000089 mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f2185866000
-     0.000096 mmap(NULL, 600368, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f21857d3000
-     0.000199 mmap(0x7f21857f0000, 319488, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1d000) = 0x7f21857f0000
-     0.000205 mmap(0x7f218583e000, 106496, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x6b000) = 0x7f218583e000
-     0.000154 mmap(0x7f2185859000, 53248, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x85000) = 0x7f2185859000
-     0.000094 mmap(NULL, 3100624, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f21854de000
-     0.000081 mmap(0x7f2185564000, 1736704, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x86000) = 0x7f2185564000
-     0.000097 mmap(0x7f218570c000, 593920, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x22e000) = 0x7f218570c000
-     0.000152 mmap(0x7f218579d000, 204800, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x2be000) = 0x7f218579d000
-     0.000106 mmap(0x7f21857cf000, 16336, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f21857cf000
-     0.000175 mmap(NULL, 103496, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f21854c4000
-     0.000092 mmap(0x7f21854c7000, 69632, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x3000) = 0x7f21854c7000
-     0.000156 mmap(0x7f21854d8000, 16384, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x14000) = 0x7f21854d8000
-     0.000117 mmap(0x7f21854dc000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x17000) = 0x7f21854dc000
-     0.000096 mmap(NULL, 136304, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f21854a2000
-     0.000105 mmap(0x7f21854a8000, 65536, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x6000) = 0x7f21854a8000
-     0.000096 mmap(0x7f21854b8000, 24576, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x16000) = 0x7f21854b8000
-     0.000098 mmap(0x7f21854be000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1b000) = 0x7f21854be000
-     0.000106 mmap(0x7f21854c0000, 13424, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f21854c0000
-     0.000085 mmap(NULL, 1323280, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f218535e000
-     0.000081 mmap(0x7f218536b000, 630784, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0xd000) = 0x7f218536b000
-     0.000132 mmap(0x7f2185405000, 634880, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0xa7000) = 0x7f2185405000
-     0.000170 mmap(0x7f21854a0000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x141000) = 0x7f21854a0000
-     0.000085 mmap(NULL, 20752, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f2185358000
-     0.000083 mmap(0x7f2185359000, 8192, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1000) = 0x7f2185359000
-     0.000109 mmap(0x7f218535b000, 4096, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x3000) = 0x7f218535b000
-     0.000107 mmap(0x7f218535c000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x3000) = 0x7f218535c000
-     0.000083 mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f2185356000
-     0.000093 mmap(NULL, 1918592, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f2185181000
-     0.000099 mmap(0x7f21851a3000, 1417216, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x22000) = 0x7f21851a3000
-     0.000108 mmap(0x7f21852fd000, 323584, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x17c000) = 0x7f21852fd000
-     0.000113 mmap(0x7f218534c000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1ca000) = 0x7f218534c000
-     0.000109 mmap(0x7f2185352000, 13952, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f2185352000
-     0.000152 mmap(NULL, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f218517e000
-     0.000078 mmap(NULL, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0x7f218586e000
-     0.000182 brk(NULL)                 = 0x5630841b5000
-     0.000070 brk(0x5630841d6000)       = 0x5630841d6000
-     0.000088 mmap(NULL, 2101248, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0x7f2184f7d000
-     0.000307 mmap(NULL, 2101248, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0x7f2184d7c000
-     0.000083 mmap(NULL, 2101248, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0x7f2184b7b000
-     0.000161 mmap(NULL, 2101248, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0x7f2184977000
-     0.001469 brk(0x5630841f7000)       = 0x5630841f7000
-     0.000562 brk(0x563084218000)       = 0x563084218000
-     0.000366 brk(0x563084239000)       = 0x563084239000
-     0.000181 brk(0x56308425a000)       = 0x56308425a000
-     0.000193 brk(0x563084258000)       = 0x563084258000
-     0.000563 brk(0x563084279000)       = 0x563084279000
-     0.000110 brk(0x56308429a000)       = 0x56308429a000
-     0.000189 brk(0x563084299000)       = 0x563084299000
-     0.000483 brk(0x5630842ba000)       = 0x5630842ba000
-     0.000347 brk(0x5630842b9000)       = 0x5630842b9000
-     0.000824 brk(0x5630842da000)       = 0x5630842da000
-     0.000395 brk(0x5630842fe000)       = 0x5630842fe000
-     0.000497 brk(0x56308431f000)       = 0x56308431f000
-     0.000411 brk(0x563084340000)       = 0x563084340000
-     0.000476 brk(0x563084361000)       = 0x563084361000
-     0.000467 brk(0x563084394000)       = 0x563084394000
-     0.000607 brk(0x5630843b5000)       = 0x5630843b5000
-     0.000480 brk(0x5630843d6000)       = 0x5630843d6000
-     0.000438 brk(0x5630843f7000)       = 0x5630843f7000
-     0.000436 brk(0x563084418000)       = 0x563084418000
-     0.000605 mmap(NULL, 2101248, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0x7f2184773000
-     0.000270 brk(0x56308443c000)       = 0x56308443c000
+     0.000160 brk(NULL)                 = 0x556cefa79000
+     0.000161 mmap(NULL, 34603, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f081119d000
+     0.000016 mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f081119b000
+     0.000024 mmap(NULL, 600368, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f0811108000
+     0.000018 mmap(0x7f0811125000, 319488, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1d000) = 0x7f0811125000
+     0.000017 mmap(0x7f0811173000, 106496, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x6b000) = 0x7f0811173000
+     0.000029 mmap(0x7f081118e000, 53248, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x85000) = 0x7f081118e000
+     0.000018 mmap(NULL, 3100624, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f0810e13000
+     0.000021 mmap(0x7f0810e99000, 1736704, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x86000) = 0x7f0810e99000
+     0.000022 mmap(0x7f0811041000, 593920, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x22e000) = 0x7f0811041000
+     0.000019 mmap(0x7f08110d2000, 204800, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x2be000) = 0x7f08110d2000
+     0.000020 mmap(0x7f0811104000, 16336, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f0811104000
+     0.000016 mmap(NULL, 103496, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f0810df9000
+     0.000018 mmap(0x7f0810dfc000, 69632, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x3000) = 0x7f0810dfc000
+     0.000019 mmap(0x7f0810e0d000, 16384, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x14000) = 0x7f0810e0d000
+     0.000018 mmap(0x7f0810e11000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x17000) = 0x7f0810e11000
+     0.000018 mmap(NULL, 136304, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f0810dd7000
+     0.000017 mmap(0x7f0810ddd000, 65536, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x6000) = 0x7f0810ddd000
+     0.000019 mmap(0x7f0810ded000, 24576, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x16000) = 0x7f0810ded000
+     0.000018 mmap(0x7f0810df3000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1b000) = 0x7f0810df3000
+     0.000019 mmap(0x7f0810df5000, 13424, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f0810df5000
+     0.000016 mmap(NULL, 1323280, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f0810c93000
+     0.000017 mmap(0x7f0810ca0000, 630784, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0xd000) = 0x7f0810ca0000
+     0.000019 mmap(0x7f0810d3a000, 634880, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0xa7000) = 0x7f0810d3a000
+     0.000017 mmap(0x7f0810dd5000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x141000) = 0x7f0810dd5000
+     0.000016 mmap(NULL, 20752, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f0810c8d000
+     0.000022 mmap(0x7f0810c8e000, 8192, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1000) = 0x7f0810c8e000
+     0.000019 mmap(0x7f0810c90000, 4096, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x3000) = 0x7f0810c90000
+     0.000016 mmap(0x7f0810c91000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x3000) = 0x7f0810c91000
+     0.000016 mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f0810c8b000
+     0.000019 mmap(NULL, 1918592, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f0810ab6000
+     0.000017 mmap(0x7f0810ad8000, 1417216, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x22000) = 0x7f0810ad8000
+     0.000019 mmap(0x7f0810c32000, 323584, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x17c000) = 0x7f0810c32000
+     0.000018 mmap(0x7f0810c81000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1ca000) = 0x7f0810c81000
+     0.000019 mmap(0x7f0810c87000, 13952, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f0810c87000
+     0.000034 mmap(NULL, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f0810ab3000
+     0.000019 mmap(NULL, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0x7f08111a3000
+     0.000045 brk(NULL)                 = 0x556cefa79000
+     0.000017 brk(0x556cefa9a000)       = 0x556cefa9a000
+     0.000020 mmap(NULL, 2101248, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0x7f08108b2000
+     0.000080 mmap(NULL, 2101248, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0x7f08106b1000
+     0.000019 mmap(NULL, 2101248, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0x7f08104b0000
+     0.000026 mmap(NULL, 2101248, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0x7f08102ac000
+     0.000385 brk(0x556cefabb000)       = 0x556cefabb000
+     0.000192 brk(0x556cefadc000)       = 0x556cefadc000
+     0.000075 brk(0x556cefafd000)       = 0x556cefafd000
+     0.000026 brk(0x556cefb1e000)       = 0x556cefb1e000
+     0.000030 brk(0x556cefb1c000)       = 0x556cefb1c000
+     0.000120 brk(0x556cefb3d000)       = 0x556cefb3d000
+     0.000023 brk(0x556cefb5e000)       = 0x556cefb5e000
+     0.000031 brk(0x556cefb5d000)       = 0x556cefb5d000
+     0.000159 brk(0x556cefb7e000)       = 0x556cefb7e000
+     0.000239 brk(0x556cefb9f000)       = 0x556cefb9f000
+     0.000137 brk(0x556cefbc0000)       = 0x556cefbc0000
+     0.000132 brk(0x556cefbe1000)       = 0x556cefbe1000
+     0.000117 brk(0x556cefc02000)       = 0x556cefc02000
+     0.000137 brk(0x556cefc23000)       = 0x556cefc23000
+     0.000128 brk(0x556cefc44000)       = 0x556cefc44000
+     0.000106 brk(0x556cefc65000)       = 0x556cefc65000
+     0.000131 brk(0x556cefc86000)       = 0x556cefc86000
+     0.000134 brk(0x556cefca7000)       = 0x556cefca7000
+     0.000162 brk(0x556cefcc8000)       = 0x556cefcc8000
+     0.000142 brk(0x556cefce9000)       = 0x556cefce9000
+     0.000153 mmap(NULL, 2101248, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0x7f08100a8000
+     0.000458 brk(0x556cefd0b000)       = 0x556cefd0b000
 ```     
 
 ### 1st pass SBOM Optimization
 
 ```     
-$ cargo tree
-flux_write v0.0.3 (./)
+cargo tree
+write_flux v0.0.5 (./write_flux)
+├── chrono v0.4.23
+│   ├── iana-time-zone v0.1.53
+│   ├── num-integer v0.1.45
+│   │   └── num-traits v0.2.15
+│   │       [build-dependencies]
+│   │       └── autocfg v1.1.0
+│   │   [build-dependencies]
+│   │   └── autocfg v1.1.0
+│   ├── num-traits v0.2.15 (*)
+│   ├── serde v1.0.152
+│   │   └── serde_derive v1.0.152 (proc-macro)
+│   │       ├── proc-macro2 v1.0.51
+│   │       │   └── unicode-ident v1.0.6
+│   │       ├── quote v1.0.23
+│   │       │   └── proc-macro2 v1.0.51 (*)
+│   │       └── syn v1.0.107
+│   │           ├── proc-macro2 v1.0.51 (*)
+│   │           ├── quote v1.0.23 (*)
+│   │           └── unicode-ident v1.0.6
+│   └── time v0.1.45
+│       └── libc v0.2.139
 ├── clap v4.1.6
 │   ├── bitflags v1.3.2
 │   ├── clap_derive v4.1.0 (proc-macro)
 │   │   ├── heck v0.4.1
 │   │   ├── proc-macro-error v1.0.4
 │   │   │   ├── proc-macro-error-attr v1.0.4 (proc-macro)
-│   │   │   │   ├── proc-macro2 v1.0.51
-│   │   │   │   │   └── unicode-ident v1.0.6
-│   │   │   │   └── quote v1.0.23
-│   │   │   │       └── proc-macro2 v1.0.51 (*)
+│   │   │   │   ├── proc-macro2 v1.0.51 (*)
+│   │   │   │   └── quote v1.0.23 (*)
 │   │   │   │   [build-dependencies]
 │   │   │   │   └── version_check v0.9.4
 │   │   │   ├── proc-macro2 v1.0.51 (*)
 │   │   │   ├── quote v1.0.23 (*)
-│   │   │   └── syn v1.0.107
-│   │   │       ├── proc-macro2 v1.0.51 (*)
-│   │   │       ├── quote v1.0.23 (*)
-│   │   │       └── unicode-ident v1.0.6
+│   │   │   └── syn v1.0.107 (*)
 │   │   │   [build-dependencies]
 │   │   │   └── version_check v0.9.4
 │   │   ├── proc-macro2 v1.0.51 (*)
@@ -170,6 +188,20 @@ flux_write v0.0.3 (./)
 │   │       └── linux-raw-sys v0.1.4
 │   ├── once_cell v1.17.1
 │   ├── strsim v0.10.0
+│   └── termcolor v1.2.0
+├── clap-verbosity-flag v2.0.0
+│   ├── clap v4.1.6 (*)
+│   └── log v0.4.17
+│       └── cfg-if v1.0.0
+├── env_logger v0.10.0
+│   ├── humantime v2.1.0
+│   ├── is-terminal v0.4.3 (*)
+│   ├── log v0.4.17 (*)
+│   ├── regex v1.7.1
+│   │   ├── aho-corasick v0.7.20
+│   │   │   └── memchr v2.5.0
+│   │   ├── memchr v2.5.0
+│   │   └── regex-syntax v0.6.28
 │   └── termcolor v1.2.0
 ├── futures v0.3.26
 │   ├── futures-channel v0.3.26
@@ -202,22 +234,7 @@ flux_write v0.0.3 (./)
 ├── influxdb2 v0.3.5
 │   ├── base64 v0.13.1
 │   ├── bytes v1.4.0
-│   ├── chrono v0.4.23
-│   │   ├── iana-time-zone v0.1.53
-│   │   ├── num-integer v0.1.45
-│   │   │   └── num-traits v0.2.15
-│   │   │       [build-dependencies]
-│   │   │       └── autocfg v1.1.0
-│   │   │   [build-dependencies]
-│   │   │   └── autocfg v1.1.0
-│   │   ├── num-traits v0.2.15 (*)
-│   │   ├── serde v1.0.152
-│   │   │   └── serde_derive v1.0.152 (proc-macro)
-│   │   │       ├── proc-macro2 v1.0.51 (*)
-│   │   │       ├── quote v1.0.23 (*)
-│   │   │       └── syn v1.0.107 (*)
-│   │   └── time v0.1.45
-│   │       └── libc v0.2.139
+│   ├── chrono v0.4.23 (*)
 │   ├── csv v1.2.0
 │   │   ├── csv-core v0.1.10
 │   │   │   └── memchr v2.5.0
@@ -234,8 +251,7 @@ flux_write v0.0.3 (./)
 │   │   ├── proc-macro2 v1.0.51 (*)
 │   │   ├── quote v1.0.23 (*)
 │   │   ├── regex v1.7.1
-│   │   │   ├── aho-corasick v0.7.20
-│   │   │   │   └── memchr v2.5.0
+│   │   │   ├── aho-corasick v0.7.20 (*)
 │   │   │   ├── memchr v2.5.0
 │   │   │   └── regex-syntax v0.6.28
 │   │   └── syn v1.0.107 (*)
@@ -298,8 +314,7 @@ flux_write v0.0.3 (./)
 │   │   │   ├── memchr v2.5.0
 │   │   │   ├── mio v0.8.6
 │   │   │   │   ├── libc v0.2.139
-│   │   │   │   └── log v0.4.17
-│   │   │   │       └── cfg-if v1.0.0
+│   │   │   │   └── log v0.4.17 (*)
 │   │   │   ├── num_cpus v1.15.0 (*)
 │   │   │   ├── parking_lot v0.12.1
 │   │   │   │   ├── lock_api v0.4.9
@@ -512,8 +527,7 @@ flux_write v0.0.3 (./)
 │   │   │   └── regex-automata v0.1.10
 │   │   │       └── regex-syntax v0.6.28
 │   │   ├── parking_lot v0.11.2 (*)
-│   │   ├── regex v1.7.1
-│   │   │   └── regex-syntax v0.6.28
+│   │   ├── regex v1.7.1 (*)
 │   │   ├── serde v1.0.152 (*)
 │   │   ├── serde_json v1.0.93 (*)
 │   │   ├── sharded-slab v0.1.4
@@ -528,6 +542,7 @@ flux_write v0.0.3 (./)
 │   │       ├── serde v1.0.152 (*)
 │   │       └── tracing-core v0.1.30 (*)
 │   └── url v2.3.1 (*)
+├── log v0.4.17 (*)
 ├── nom v7.1.3
 │   ├── memchr v2.5.0
 │   └── minimal-lexical v0.2.1
@@ -565,25 +580,41 @@ flux_write v0.0.3 (./)
 ### 1st pass SBOM feature Optimization
 ```
 cargo tree --format "{p} {f}"
-flux_write v0.0.3 (/home/bkimberl/rust/my_influxdb) default,native-tls
+write_flux v0.0.5 (./write_flux) default,native-tls
+├── chrono v0.4.23 clock,default,iana-time-zone,js-sys,oldtime,serde,std,time,wasm-bindgen,wasmbind,winapi
+│   ├── iana-time-zone v0.1.53 fallback
+│   ├── num-integer v0.1.45
+│   │   └── num-traits v0.2.15 default,std
+│   │       [build-dependencies]
+│   │       └── autocfg v1.1.0
+│   │   [build-dependencies]
+│   │   └── autocfg v1.1.0
+│   ├── num-traits v0.2.15 default,std (*)
+│   ├── serde v1.0.152 default,derive,serde_derive,std
+│   │   └── serde_derive v1.0.152 (proc-macro) default
+│   │       ├── proc-macro2 v1.0.51 default,proc-macro
+│   │       │   └── unicode-ident v1.0.6
+│   │       ├── quote v1.0.23 default,proc-macro
+│   │       │   └── proc-macro2 v1.0.51 default,proc-macro (*)
+│   │       └── syn v1.0.107 clone-impls,default,derive,extra-traits,full,parsing,printing,proc-macro,quote,visit,visit-mut
+│   │           ├── proc-macro2 v1.0.51 default,proc-macro (*)
+│   │           ├── quote v1.0.23 default,proc-macro (*)
+│   │           └── unicode-ident v1.0.6
+│   └── time v0.1.45
+│       └── libc v0.2.139 default,extra_traits,std
 ├── clap v4.1.6 cargo,color,default,derive,error-context,help,std,suggestions,usage
 │   ├── bitflags v1.3.2 default
 │   ├── clap_derive v4.1.0 (proc-macro) default
 │   │   ├── heck v0.4.1 default
 │   │   ├── proc-macro-error v1.0.4 default,syn,syn-error
 │   │   │   ├── proc-macro-error-attr v1.0.4 (proc-macro)
-│   │   │   │   ├── proc-macro2 v1.0.51 default,proc-macro
-│   │   │   │   │   └── unicode-ident v1.0.6
-│   │   │   │   └── quote v1.0.23 default,proc-macro
-│   │   │   │       └── proc-macro2 v1.0.51 default,proc-macro (*)
+│   │   │   │   ├── proc-macro2 v1.0.51 default,proc-macro (*)
+│   │   │   │   └── quote v1.0.23 default,proc-macro (*)
 │   │   │   │   [build-dependencies]
 │   │   │   │   └── version_check v0.9.4
 │   │   │   ├── proc-macro2 v1.0.51 default,proc-macro (*)
 │   │   │   ├── quote v1.0.23 default,proc-macro (*)
-│   │   │   └── syn v1.0.107 clone-impls,default,derive,extra-traits,full,parsing,printing,proc-macro,quote,visit,visit-mut
-│   │   │       ├── proc-macro2 v1.0.51 default,proc-macro (*)
-│   │   │       ├── quote v1.0.23 default,proc-macro (*)
-│   │   │       └── unicode-ident v1.0.6
+│   │   │   └── syn v1.0.107 clone-impls,default,derive,extra-traits,full,parsing,printing,proc-macro,quote,visit,visit-mut (*)
 │   │   │   [build-dependencies]
 │   │   │   └── version_check v0.9.4
 │   │   ├── proc-macro2 v1.0.51 default,proc-macro (*)
@@ -601,6 +632,20 @@ flux_write v0.0.3 (/home/bkimberl/rust/my_influxdb) default,native-tls
 │   │       └── linux-raw-sys v0.1.4 errno,general,ioctl,no_std
 │   ├── once_cell v1.17.1 alloc,default,race,std
 │   ├── strsim v0.10.0
+│   └── termcolor v1.2.0
+├── clap-verbosity-flag v2.0.0
+│   ├── clap v4.1.6 cargo,color,default,derive,error-context,help,std,suggestions,usage (*)
+│   └── log v0.4.17 std
+│       └── cfg-if v1.0.0
+├── env_logger v0.10.0 auto-color,color,default,humantime,regex
+│   ├── humantime v2.1.0
+│   ├── is-terminal v0.4.3  (*)
+│   ├── log v0.4.17 std (*)
+│   ├── regex v1.7.1 aho-corasick,memchr,perf,perf-cache,perf-dfa,perf-inline,perf-literal,std
+│   │   ├── aho-corasick v0.7.20 default,std
+│   │   │   └── memchr v2.5.0 default,std,use_std
+│   │   ├── memchr v2.5.0 default,std,use_std
+│   │   └── regex-syntax v0.6.28 default,unicode,unicode-age,unicode-bool,unicode-case,unicode-gencat,unicode-perl,unicode-script,unicode-segment
 │   └── termcolor v1.2.0
 ├── futures v0.3.26 alloc,async-await,default,executor,futures-executor,std
 │   ├── futures-channel v0.3.26 alloc,default,futures-sink,sink,std
@@ -633,22 +678,7 @@ flux_write v0.0.3 (/home/bkimberl/rust/my_influxdb) default,native-tls
 ├── influxdb2 v0.3.5 rustls
 │   ├── base64 v0.13.1 default,std
 │   ├── bytes v1.4.0 default,std
-│   ├── chrono v0.4.23 clock,default,iana-time-zone,js-sys,oldtime,serde,std,time,wasm-bindgen,wasmbind,winapi
-│   │   ├── iana-time-zone v0.1.53 fallback
-│   │   ├── num-integer v0.1.45
-│   │   │   └── num-traits v0.2.15 default,std
-│   │   │       [build-dependencies]
-│   │   │       └── autocfg v1.1.0
-│   │   │   [build-dependencies]
-│   │   │   └── autocfg v1.1.0
-│   │   ├── num-traits v0.2.15 default,std (*)
-│   │   ├── serde v1.0.152 default,derive,serde_derive,std
-│   │   │   └── serde_derive v1.0.152 (proc-macro) default
-│   │   │       ├── proc-macro2 v1.0.51 default,proc-macro (*)
-│   │   │       ├── quote v1.0.23 default,proc-macro (*)
-│   │   │       └── syn v1.0.107 clone-impls,default,derive,extra-traits,full,parsing,printing,proc-macro,quote,visit,visit-mut (*)
-│   │   └── time v0.1.45
-│   │       └── libc v0.2.139 default,extra_traits,std
+│   ├── chrono v0.4.23 clock,default,iana-time-zone,js-sys,oldtime,serde,std,time,wasm-bindgen,wasmbind,winapi (*)
 │   ├── csv v1.2.0
 │   │   ├── csv-core v0.1.10 default
 │   │   │   └── memchr v2.5.0 default,std,use_std
@@ -665,8 +695,7 @@ flux_write v0.0.3 (/home/bkimberl/rust/my_influxdb) default,native-tls
 │   │   ├── proc-macro2 v1.0.51 default,proc-macro (*)
 │   │   ├── quote v1.0.23 default,proc-macro (*)
 │   │   ├── regex v1.7.1 aho-corasick,default,memchr,perf,perf-cache,perf-dfa,perf-inline,perf-literal,std,unicode,unicode-age,unicode-bool,unicode-case,unicode-gencat,unicode-perl,unicode-script,unicode-segment
-│   │   │   ├── aho-corasick v0.7.20 default,std
-│   │   │   │   └── memchr v2.5.0 default,std
+│   │   │   ├── aho-corasick v0.7.20 default,std (*)
 │   │   │   ├── memchr v2.5.0 default,std
 │   │   │   └── regex-syntax v0.6.28 default,unicode,unicode-age,unicode-bool,unicode-case,unicode-gencat,unicode-perl,unicode-script,unicode-segment
 │   │   └── syn v1.0.107 clone-impls,default,derive,extra-traits,full,parsing,printing,proc-macro,quote,visit,visit-mut (*)
@@ -729,8 +758,7 @@ flux_write v0.0.3 (/home/bkimberl/rust/my_influxdb) default,native-tls
 │   │   │   ├── memchr v2.5.0 default,std,use_std
 │   │   │   ├── mio v0.8.6 default,net,os-ext,os-poll
 │   │   │   │   ├── libc v0.2.139 default,extra_traits,std
-│   │   │   │   └── log v0.4.17
-│   │   │   │       └── cfg-if v1.0.0
+│   │   │   │   └── log v0.4.17 std (*)
 │   │   │   ├── num_cpus v1.15.0  (*)
 │   │   │   ├── parking_lot v0.12.1 default
 │   │   │   │   ├── lock_api v0.4.9
@@ -827,13 +855,13 @@ flux_write v0.0.3 (/home/bkimberl/rust/my_influxdb) default,native-tls
 │   │   │   ├── tower-service v0.3.2
 │   │   │   ├── tracing v0.1.37 attributes,default,max_level_trace,release_max_level_debug,std,tracing-attributes (*)
 │   │   │   └── want v0.3.0
-│   │   │       ├── log v0.4.17  (*)
+│   │   │       ├── log v0.4.17 std (*)
 │   │   │       └── try-lock v0.2.4
 │   │   ├── hyper-rustls v0.23.2
 │   │   │   ├── http v0.2.8  (*)
 │   │   │   ├── hyper v0.14.24 client,h2,http1,http2,runtime,socket2,tcp (*)
 │   │   │   ├── rustls v0.20.8 dangerous_configuration,default,log,logging,tls12
-│   │   │   │   ├── log v0.4.17  (*)
+│   │   │   │   ├── log v0.4.17 std (*)
 │   │   │   │   ├── ring v0.16.20 alloc,default,dev_urandom_fallback,once_cell
 │   │   │   │   │   ├── libc v0.2.139 default,extra_traits,std
 │   │   │   │   │   ├── once_cell v1.17.1 alloc,default,race,std
@@ -856,7 +884,7 @@ flux_write v0.0.3 (/home/bkimberl/rust/my_influxdb) default,native-tls
 │   │   │   ├── bytes v1.4.0 default,std
 │   │   │   ├── hyper v0.14.24 client,h2,http1,http2,runtime,socket2,tcp (*)
 │   │   │   ├── native-tls v0.2.11
-│   │   │   │   ├── log v0.4.17  (*)
+│   │   │   │   ├── log v0.4.17 std (*)
 │   │   │   │   ├── openssl v0.10.45 default
 │   │   │   │   │   ├── bitflags v1.3.2 default
 │   │   │   │   │   ├── cfg-if v1.0.0
@@ -881,7 +909,7 @@ flux_write v0.0.3 (/home/bkimberl/rust/my_influxdb) default,native-tls
 │   │   │       ├── native-tls v0.2.11  (*)
 │   │   │       └── tokio v1.25.0 bytes,default,fs,full,io-std,io-util,libc,macros,memchr,mio,net,num_cpus,parking_lot,process,rt,rt-multi-thread,signal,signal-hook-registry,socket2,sync,time,tokio-macros (*)
 │   │   ├── ipnet v2.7.1 default
-│   │   ├── log v0.4.17  (*)
+│   │   ├── log v0.4.17 std (*)
 │   │   ├── mime v0.3.16
 │   │   ├── native-tls v0.2.11  (*)
 │   │   ├── once_cell v1.17.1 alloc,default,race,std
@@ -943,8 +971,7 @@ flux_write v0.0.3 (/home/bkimberl/rust/my_influxdb) default,native-tls
 │   │   │   └── regex-automata v0.1.10 default,regex-syntax,std
 │   │   │       └── regex-syntax v0.6.28 default,unicode,unicode-age,unicode-bool,unicode-case,unicode-gencat,unicode-perl,unicode-script,unicode-segment
 │   │   ├── parking_lot v0.11.2 default (*)
-│   │   ├── regex v1.7.1 std
-│   │   │   └── regex-syntax v0.6.28 default,unicode,unicode-age,unicode-bool,unicode-case,unicode-gencat,unicode-perl,unicode-script,unicode-segment
+│   │   ├── regex v1.7.1 aho-corasick,memchr,perf,perf-cache,perf-dfa,perf-inline,perf-literal,std (*)
 │   │   ├── serde v1.0.152 default,derive,serde_derive,std (*)
 │   │   ├── serde_json v1.0.93 default,std (*)
 │   │   ├── sharded-slab v0.1.4
@@ -959,6 +986,7 @@ flux_write v0.0.3 (/home/bkimberl/rust/my_influxdb) default,native-tls
 │   │       ├── serde v1.0.152 default,derive,serde_derive,std (*)
 │   │       └── tracing-core v0.1.30 default,once_cell,std (*)
 │   └── url v2.3.1 default (*)
+├── log v0.4.17 std (*)
 ├── nom v7.1.3 alloc,default,std
 │   ├── memchr v2.5.0 default,std,use_std
 │   └── minimal-lexical v0.2.1 std
@@ -990,4 +1018,5 @@ flux_write v0.0.3 (/home/bkimberl/rust/my_influxdb) default,native-tls
 ├── serde_derive v1.0.152 (proc-macro) default (*)
 ├── serde_json v1.0.93 default,std (*)
 └── tokio v1.25.0 bytes,default,fs,full,io-std,io-util,libc,macros,memchr,mio,net,num_cpus,parking_lot,process,rt,rt-multi-thread,signal,signal-hook-registry,socket2,sync,time,tokio-macros (*)
+
 ```

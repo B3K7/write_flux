@@ -10,7 +10,7 @@ The [Write Flux client](https://github.com/B3K7/infx_w) is a rust based alternat
  Used properly, LSM(s) can delivery durability and high-write throughput.
  
  For more information, please consult:
-  - [P. O'Neil1 et al, The Log-Structured Merge-Tree.](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.44.2782&rep=rep1&type=pdf)
+  - [P. O'Neil et al, The Log-Structured Merge-Tree.](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.44.2782&rep=rep1&type=pdf)
   - [B. Stopford,  Log Structured Merge Trees.](http://www.benstopford.com/2015/02/14/log-structured-merge-trees/)
   - [Figure 3. A. Jacobs. ACM Queue. Vol 7. Issue 6.](https://queue.acm.org/detail.cfm?id=1563874)
   - [J.P Vincent. Medium. Log Structured Merge Trees(s)](https://medium.com/swlh/log-structured-merge-trees-9c8e2bea89e8)

@@ -8,6 +8,8 @@ use std::fs;
 use serde_derive::{Deserialize, Serialize};
 use chrono::DateTime;
 
+
+
 /// Send point measurement(s) to influxdb2 target
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -18,6 +20,9 @@ struct Args {
    /// influx measurements
    #[arg(short, long)]
    measurement_json: String,
+   /// influx self signed CA
+   #[arg(short, long)]
+   ca_path: String,
    #[clap(flatten)]
    verbose: Verbosity,
 }
@@ -45,7 +50,7 @@ struct MeasureStruct {
     _records: Vec<DataStruct>,
 }
 
-async fn wr_nflx_msg( target_path : &str, measurement_path : &str ) -> Result<(), Box<dyn std::error::Error>> {
+async fn wr_nflx_msg( target_path : &str, measurement_path : &str, ca_path: &str ) -> Result<(), Box<dyn std::error::Error>> {
     // send message
 
     use futures::prelude::*;
@@ -59,7 +64,8 @@ async fn wr_nflx_msg( target_path : &str, measurement_path : &str ) -> Result<()
         serde_json::from_str::<FlxStruct>(&endpoint).unwrap()
     };
 
-    let client = Client::new(&endpoint.url, &endpoint.org, &endpoint.token);
+    //let client = Client::new(&endpoint.url, &endpoint.org, &endpoint.token);
+    let client = Client::new_root_ca_pem(endpoint.url, endpoint.org, endpoint.token, ca_path);
 
     // ingest measurements
     // todo limit size main memory
@@ -93,12 +99,11 @@ async fn wr_nflx_msg( target_path : &str, measurement_path : &str ) -> Result<()
                     .unwrap();
             points.push(point.to_owned());
 
+
         }
     }
 
-    // emit debug
-
-   log::debug!("point vec: {:#?}", &points);
+    log::debug!("point vec: {:#?}", &points);
     //send message
     Ok(client.write(&endpoint.bucket, stream::iter(points)).await?)
 }
@@ -106,17 +111,20 @@ async fn wr_nflx_msg( target_path : &str, measurement_path : &str ) -> Result<()
 #[tokio::main]
 async fn main() -> Result<(), Error>  {
     /* main routine */
+
     let args = Args::parse();
     let target_path = args.target_json;
     let measurement_path = args.measurement_json;
+    let ca_path = args.ca_path;
 
     env_logger::Builder::new()
         .filter_level(args.verbose.log_level_filter())
         .init();
 
     //write message
-    let my_result = block_on(wr_nflx_msg(&target_path, &measurement_path));
+    let my_result = block_on(wr_nflx_msg(&target_path, &measurement_path, &ca_path));
 
     my_result.unwrap();
     Ok(())
 }
+

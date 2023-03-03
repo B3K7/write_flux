@@ -23,11 +23,12 @@ $ ./write_flux --help
 ```
 Influxdb2 point client
 
-Usage: write_flux [OPTIONS] --target-json <TARGET_JSON> --measurement-json <MEASUREMENT_JSON>
+Usage: write_flux [OPTIONS] --target-json <TARGET_JSON> --measurement-json <MEASUREMENT_JSON> --ca-path <CA_PATH>
 
 Options:
   -t, --target-json <TARGET_JSON>            endpoint target
   -m, --measurement-json <MEASUREMENT_JSON>  influx measurements
+  -c, --ca-path <CA_PATH>                    influx self signed CA
   -v, --verbose...                           More output per occurrence
   -q, --quiet...                             Less output per occurrence
   -h, --help                                 Print help
@@ -37,7 +38,7 @@ Options:
 ## Optimization Notes
 
 ### 1st pass Core/Duty Cycle Optimization
-time ./write_flux -t ./nfx.db.json -m ./measurements.1k.json
+time ./write_flux -t ./nfx.db.json -m ./measurements.1k.json -c ./some.ca.pem
 ```
 real    0m0.234s
 user    0m0.020s

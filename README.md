@@ -14,6 +14,10 @@ The [Write Flux client](https://github.com/B3K7/infx_w) is a rust based alternat
   - [B. Stopford,  Log Structured Merge Trees.](http://www.benstopford.com/2015/02/14/log-structured-merge-trees/)
   - [A. Jacobs. ACM Queue. Vol 7. Issue 6. The Pathologies of Big Data. Figure 3.](https://queue.acm.org/detail.cfm?id=1563874)
   - [J.P Vincent. Medium. Log Structured Merge Trees(s)](https://medium.com/swlh/log-structured-merge-trees-9c8e2bea89e8)
+  - [InfluxDB storage engine.](https://docs.influxdata.com/influxdb/v2.6/reference/internals/storage-engine/#time-structured-merge-tree-tsm)
+  - [InfluxDB. Intro to InfluxDB's TSM Engine](https://www.youtube.com/watch?v=C5sv0CtuMCw&t=268s)
+  - [Data Council. InfluxDB Storage Engine Internals | Metamarkets](https://www.youtube.com/watch?v=rtEalnKT25I)
+  - [CMU Database Group. Time Series Database Lectures #1 - Paul Dix. InfluxDB.](https://www.youtube.com/watch?v=2SUBRE6wGiA)
 
 ## build instructions
 cargo build --release

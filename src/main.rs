@@ -39,6 +39,7 @@ struct FlxStruct {
 struct DataStruct {
     tag    : String,
     measure: i64,
+    label : Option<String>,
     datetime : Option<String>
 }
 
@@ -79,7 +80,7 @@ async fn wr_nflx_msg( target_path : &str, measurement_path : &str, ca_path: &str
 
     // marshall message
     for iter in &measurement._records {
-        if iter.datetime.is_none() {
+        if iter.datetime.is_none() && iter.label.is_none() {
             let point : DataPoint =
                 DataPoint::builder(&measurement.topic.clone())
                     .tag(  measurement.tagunits.clone(), iter.tag.clone())
@@ -87,7 +88,8 @@ async fn wr_nflx_msg( target_path : &str, measurement_path : &str, ca_path: &str
                     .build()
                     .unwrap();
             points.push(point.to_owned());
-        } else {
+        } 
+        if iter.datetime.is_some() && iter.label.is_none() {
             let dt =  DateTime::parse_from_rfc3339(iter.datetime.as_ref().unwrap()).unwrap();
 
             let point : DataPoint =
@@ -98,9 +100,33 @@ async fn wr_nflx_msg( target_path : &str, measurement_path : &str, ca_path: &str
                     .build()
                     .unwrap();
             points.push(point.to_owned());
+        } 
+        if iter.datetime.is_none() && iter.label.is_some() {
+            let  label=  iter.label.as_ref().unwrap();
 
+            let point : DataPoint =
+                DataPoint::builder(&measurement.topic.clone())
+                    .tag(  measurement.tagunits.clone(), iter.tag.clone())
+                    .tag(  "label", label.clone())
+                    .field(measurement.units.clone(),    iter.measure)
+                    .build()
+                    .unwrap();
+            points.push(point.to_owned());
+        } 
+        if iter.datetime.is_some() && iter.label.is_some() {
+            let  label = iter.label.as_ref().unwrap();
+            let dt =  DateTime::parse_from_rfc3339(iter.datetime.as_ref().unwrap()).unwrap();
 
-        }
+            let point : DataPoint =
+                DataPoint::builder(&measurement.topic.clone())
+                    .tag(  measurement.tagunits.clone(), iter.tag.clone())
+                    .tag(  "label", label.clone())
+                    .field(measurement.units.clone(),    iter.measure)
+                    .timestamp(dt.timestamp())
+                    .build()
+                    .unwrap();
+            points.push(point.to_owned());
+        } 
     }
 
     log::debug!("point vec: {:#?}", &points);

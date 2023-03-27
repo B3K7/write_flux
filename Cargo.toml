@@ -22,7 +22,6 @@ default     = ["native-tls"]
 native-tls  = ["reqwest/native-tls"]
 rustls      = ["reqwest/rustls-tls"]
 
-
 [dependencies] # In alphabetical order
 cargo-generate-rpm = "0.10.1"
 chrono        = { version = "0.4.23" }
@@ -50,3 +49,8 @@ influxdb2   = "https://github.com/3BK/influxdb2"
 assets = [
     { source = "target/release/write_flux" ,dest = "/usr/bin/write_flux", mode = "0755" }
 ]
+
+[package.metadata.deb]
+copyright = "(C) 2023 ALL RIGHTS RESERVED 3BK7"
+
+

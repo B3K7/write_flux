@@ -55,7 +55,10 @@ async fn wr_nflx_msg( target_path : &str, measurement_path : &str, ca_path: &str
     // send message
 
     use futures::prelude::*;
+    //use influxdb2::models::DataPoint;
     use influxdb2::models::DataPoint;
+    use influxdb2::models::data_point::DataPointBuilder;
+    use influxdb2::models::data_point::DataPointError;
     use influxdb2::Client;
 
     //ingest target endpoint
@@ -80,53 +83,25 @@ async fn wr_nflx_msg( target_path : &str, measurement_path : &str, ca_path: &str
 
     // marshall message
     for iter in &measurement._records {
-        if iter.datetime.is_none() && iter.label.is_none() {
-            let point : DataPoint =
-                DataPoint::builder(&measurement.topic.clone())
-                    .tag(  measurement.tagunits.clone(), iter.tag.clone())
-                    .field(measurement.units.clone(),    iter.measure)
-                    .build()
-                    .unwrap();
-            points.push(point.to_owned());
-        } 
-        if iter.datetime.is_some() && iter.label.is_none() {
-            let dt =  DateTime::parse_from_rfc3339(iter.datetime.as_ref().unwrap()).unwrap();
 
-            let point : DataPoint =
-                DataPoint::builder(&measurement.topic.clone())
-                    .tag(  measurement.tagunits.clone(), iter.tag.clone())
-                    .field(measurement.units.clone(),    iter.measure)
-                    .timestamp(dt.timestamp())
-                    .build()
-                    .unwrap();
-            points.push(point.to_owned());
-        } 
-        if iter.datetime.is_none() && iter.label.is_some() {
+        let mut pb = DataPointBuilder::default();
+      
+        pb.measurement(&measurement.topic.clone());
+        pb.tag(  measurement.tagunits.clone(), iter.tag.clone());
+        pb.field(measurement.units.clone(),    iter.measure);
+        if iter.datetime.is_some() {
+            let dt =  DateTime::parse_from_rfc3339(iter.datetime.as_ref().unwrap()).unwrap();
+            pb.timestamp(dt.timestamp());
+        }
+        if iter.label.is_some() {
             let  label=  iter.label.as_ref().unwrap();
+            pb.tag(  "label", label.clone());
+        }
+        let pr : Result<DataPoint, DataPointError> = pb.build();
+        //println!("{:?}",point);
+        let point: DataPoint = pr.unwrap();
+        points.push(point.to_owned());
 
-            let point : DataPoint =
-                DataPoint::builder(&measurement.topic.clone())
-                    .tag(  measurement.tagunits.clone(), iter.tag.clone())
-                    .tag(  "label", label.clone())
-                    .field(measurement.units.clone(),    iter.measure)
-                    .build()
-                    .unwrap();
-            points.push(point.to_owned());
-        } 
-        if iter.datetime.is_some() && iter.label.is_some() {
-            let  label = iter.label.as_ref().unwrap();
-            let dt =  DateTime::parse_from_rfc3339(iter.datetime.as_ref().unwrap()).unwrap();
-
-            let point : DataPoint =
-                DataPoint::builder(&measurement.topic.clone())
-                    .tag(  measurement.tagunits.clone(), iter.tag.clone())
-                    .tag(  "label", label.clone())
-                    .field(measurement.units.clone(),    iter.measure)
-                    .timestamp(dt.timestamp())
-                    .build()
-                    .unwrap();
-            points.push(point.to_owned());
-        } 
     }
 
     log::debug!("point vec: {:#?}", &points);

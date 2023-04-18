@@ -55,7 +55,6 @@ async fn wr_nflx_msg( target_path : &str, measurement_path : &str, ca_path: &str
     // send message
 
     use futures::prelude::*;
-    //use influxdb2::models::DataPoint;
     use influxdb2::models::DataPoint;
     use influxdb2::models::data_point::DataPointBuilder;
     use influxdb2::models::data_point::DataPointError;
@@ -85,10 +84,10 @@ async fn wr_nflx_msg( target_path : &str, measurement_path : &str, ca_path: &str
     for iter in &measurement._records {
 
         let mut pb = DataPointBuilder::default();
-      
         pb.measurement(&measurement.topic.clone());
-        pb.tag(  measurement.tagunits.clone(), iter.tag.clone());
-        pb.field(measurement.units.clone(),    iter.measure);
+        pb.tag( measurement.tagunits.clone(), iter.tag.clone());
+        pb.field(measurement.units.clone(), iter.measure);
+
         if iter.datetime.is_some() {
             let dt =  DateTime::parse_from_rfc3339(iter.datetime.as_ref().unwrap()).unwrap();
             pb.timestamp(dt.timestamp());
@@ -97,7 +96,9 @@ async fn wr_nflx_msg( target_path : &str, measurement_path : &str, ca_path: &str
             let  label=  iter.label.as_ref().unwrap();
             pb.tag(  "label", label.clone());
         }
+
         let pr : Result<DataPoint, DataPointError> = pb.build();
+
         //println!("{:?}",point);
         let point: DataPoint = pr.unwrap();
         points.push(point.to_owned());
@@ -105,6 +106,7 @@ async fn wr_nflx_msg( target_path : &str, measurement_path : &str, ca_path: &str
     }
 
     log::debug!("point vec: {:#?}", &points);
+
     //send message
     Ok(client.write(&endpoint.bucket, stream::iter(points)).await?)
 }

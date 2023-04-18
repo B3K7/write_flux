@@ -6,7 +6,7 @@ use futures::executor::block_on;
 use reqwest::Error;
 use std::fs;
 use serde_derive::{Deserialize, Serialize};
-use chrono::DateTime;
+//use chrono::DateTime;
 
 
 
@@ -59,6 +59,8 @@ async fn wr_nflx_msg( target_path : &str, measurement_path : &str, ca_path: &str
     use influxdb2::models::data_point::DataPointBuilder;
     use influxdb2::models::data_point::DataPointError;
     use influxdb2::Client;
+    use time::{format_description::well_known::Rfc3339, PrimitiveDateTime, UtcOffset};
+
 
     //ingest target endpoint
     let endpoint = {
@@ -80,6 +82,7 @@ async fn wr_nflx_msg( target_path : &str, measurement_path : &str, ca_path: &str
 
     let mut points = Vec::new();
 
+
     // marshall message
     for iter in &measurement._records {
 
@@ -89,8 +92,30 @@ async fn wr_nflx_msg( target_path : &str, measurement_path : &str, ca_path: &str
         pb.field(measurement.units.clone(), iter.measure);
 
         if iter.datetime.is_some() {
-            let dt =  DateTime::parse_from_rfc3339(iter.datetime.as_ref().unwrap()).unwrap();
-            pb.timestamp(dt.timestamp());
+
+            //https://stackoverflow.com/questions/74935683/convert-utc-rfc3339-timestamp-to-local-time-with-the-time-crate
+            //OffsetDateTime::parse(iter.datetime.as_ref().unwrap(),&time_rfc3389);
+                // Parse the given zulu paramater.
+            let zulu : &String=  iter.datetime.as_ref().unwrap();
+
+            // Determine Local TimeZone
+            let utc_offset = UtcOffset::current_local_offset().unwrap();
+            /*{
+                Ok(utc_offset) => utc_offset,
+                Err(..) => return zulu.to_owned(),
+            }; */
+
+            let zulu_parsed = PrimitiveDateTime::parse(zulu, &Rfc3339).unwrap().assume_utc();
+            /*{
+                Ok(zulu_parsed) => zulu_parsed.assume_utc(),
+                Err(..) => return zulu.to_owned(),
+            };*/
+
+            // Convert zulu to local time offset.
+            let parsed = zulu_parsed.to_offset(utc_offset).unix_timestamp();
+
+            //let dt =  DateTime::parse_from_rfc3339(iter.datetime.as_ref().unwrap()).unwrap();
+            pb.timestamp(parsed);
         }
         if iter.label.is_some() {
             let  label=  iter.label.as_ref().unwrap();

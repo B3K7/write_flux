@@ -91,7 +91,7 @@ async fn wr_nflx_msg( target_path : &str, measurement_path : &str, ca_path: &str
         pb.field(measurement.units.clone(),    iter.measure);
         if iter.datetime.is_some() {
             let dt =  DateTime::parse_from_rfc3339(iter.datetime.as_ref().unwrap()).unwrap();
-            pb.timestamp(dt.timestamp());
+            pb.timestamp(dt.timestamp()*1_000_000_000);
         }
         if iter.label.is_some() {
             let  label=  iter.label.as_ref().unwrap();

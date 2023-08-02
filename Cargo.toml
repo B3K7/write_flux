@@ -23,8 +23,7 @@ native-tls  = ["reqwest/native-tls"]
 rustls      = ["reqwest/rustls-tls"]
 
 [dependencies] # In alphabetical order
-cargo-generate-rpm = "0.10.1"
-chrono        = { version = "0.4.23" }
+time          = {version = "0.3.20", features=["parsing","local-offset"]}
 clap          = { version = "4.1.6", features = ["derive", "cargo"] }
 clap-verbosity-flag = { version = "2.0.0" }
 env_logger    = { version = "0.10.0" }
@@ -39,6 +38,9 @@ serde         = { version = "1.0.158" }
 serde_derive  = { version = "1.0.158"  }
 serde_json    = { version = "1.0.94" }
 tokio         = { version = "1.25", features = ["full"]  }
+
+chrono        = { version = "0.4.23" }
+#cargo-generate-rpm = "0.10.1"
 
 [workspace]
 members = ["influxdb2"]

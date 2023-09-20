@@ -40,9 +40,6 @@ serde_json    = { version = "1.0" }
 tokio         = { version = "1.25", features = ["full"]  }
 chrono        = { version = "0.4" }
 
-[target.x86_64-pc-windows-msvc]
-rustflags = ["-C", "target-feature=+crt-static"]
-
 [workspace]
 members = ["influxdb2"]
 influxdb2   = "https://github.com/3BK/influxdb2"

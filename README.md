@@ -1,9 +1,11 @@
 # write_flux client
 The [Write Flux client](https://github.com/B3K7/infx_w) is a rust based alternative to the [Telegraf agent](https://github.com/influxdata/telegraf).  
    - The Write Flux client depends on a number of configuration items including the [Influxdb2 rust client](https://github.com/aprimadi/influxdb2)
+      - the Influxdb2 rust client is a fork of the [official Influxdb2 client](https://github.com/influxdata/influxdb_iox/tree/main/influxdb2_client)
       - The Influxdb2 rust client depends on the [Open-Telementry toolkit](https://github.com/open-telemetry/opentelemetry-rust); and, 
       - The Influxdb2 rust client makes use of the [Influxdb 2.0 API](https://docs.influxdata.com/influxdb/v2.0/reference/api/)
          - The Influx 2.0 API  relies on the [InfluxDB open source time series platform](https://github.com/influxdata/influxdb)
+
 
 # About InfluxDb
  From an environment-technology "form/fit/function" perspective, Influx uses Log structured Merge(LSM) Trees.  

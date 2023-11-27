@@ -84,16 +84,16 @@ async fn wr_nflx_msg( target_path : &str, measurement_path : &str, ca_path: &str
 
 
     // marshall message
-    for iter in &measurement._records {
+    for (i,item) in measurement._records.iter().enumerate() {
 
         let mut pb = DataPointBuilder::default();
 
         pb.measurement(&measurement.topic.clone());
-        pb.tag(measurement.tagunits.clone(), iter.tag.clone());
-        pb.field(measurement.units.clone(), iter.measure);
+        pb.tag(measurement.tagunits.clone(), item.tag.clone());
+        pb.field(measurement.units.clone(), item.measure);
 
-        if iter.datetime.is_some() {
-            let dt =  DateTime::parse_from_rfc3339(iter.datetime.as_ref().unwrap()).unwrap();
+        if item.datetime.is_some() {
+            let dt =  DateTime::parse_from_rfc3339(item.datetime.as_ref().unwrap()).unwrap();
             pb.timestamp(dt.timestamp()*1_000_000_000);
 
             //https://stackoverflow.com/questions/74935683/convert-utc-rfc3339-timestamp-to-local-time-with-the-time-crate
@@ -120,8 +120,8 @@ async fn wr_nflx_msg( target_path : &str, measurement_path : &str, ca_path: &str
             //let dt =  DateTime::parse_from_rfc3339(iter.datetime.as_ref().unwrap()).unwrap();
             //pb.timestamp(parsed);
         }
-        if iter.label.is_some() {
-            let  label=  iter.label.as_ref().unwrap();
+        if item.label.is_some() {
+            let  label=  item.label.as_ref().unwrap();
             pb.tag(  "label", label.clone());
         }
 
@@ -130,6 +130,12 @@ async fn wr_nflx_msg( target_path : &str, measurement_path : &str, ca_path: &str
         //println!("{:?}",point);
         let point: DataPoint = pr.unwrap();
         points.push(point.to_owned());
+
+        if 99999 == i % 10000 {
+            log::debug!("point vec: {:#?}", &points);
+            client.write(&endpoint.bucket, stream::iter(points)).await?;
+            points = Vec::new();
+        }
 
     }
 

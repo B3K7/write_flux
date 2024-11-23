@@ -11,13 +11,13 @@ env:
 
 jobs:
   build:
+    permissions:
+      contents: read
 
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
       - name: Build
         run: cargo build --verbose

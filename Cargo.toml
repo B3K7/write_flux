@@ -3,7 +3,7 @@ name        = "write_flux"
 version     = "0.1.30"
 keywords    = ["write_flux", "influxdb", "influxdb2", "reqwest", "rustls", "aws-lc-rs"]
 description = "Influxdb2 point client"
-edition     = "2021"
+edition     = "2024"
 license     = "MIT OR Apache-2.0"
 authors     = [ "B3K7" ]
 

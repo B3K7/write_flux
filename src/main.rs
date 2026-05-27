@@ -1,49 +1,44 @@
-/* write_flux/src/main.rs. */
-
+use chrono::DateTime;
 use clap::Parser;
 use clap_verbosity_flag::Verbosity;
-use futures::executor::block_on;
-use reqwest::Error;
+use reqwest::{Client, Certificate};
+use serde::Deserialize;
 use std::fs;
-use serde_derive::{Deserialize, Serialize};
-use chrono::DateTime;
 
-
-
-/// Send point measurement(s) to influxdb2 target
+/// Send point measurement(s) to influxdb2 target via HTTP Line Protocol
 #[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
+#[command(author, version, about)]
 struct Args {
-   /// endpoint target
-   #[arg(short, long)]
-   target_json: String,
-   /// influx measurements
-   #[arg(short, long)]
-   measurement_json: String,
-   /// influx self signed CA
-   #[arg(short, long)]
-   ca_path: String,
-   #[clap(flatten)]
-   verbose: Verbosity,
+    /// Endpoint target JSON
+    #[arg(short, long)]
+    target_json: String,
+    /// Influx measurements JSON
+    #[arg(short, long)]
+    measurement_json: String,
+    /// Influx self-signed CA path (PEM format)
+    #[arg(short, long)]
+    ca_path: String,
+    #[clap(flatten)]
+    verbose: Verbosity,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Debug)]
 struct FlxStruct {
-    url    : String,
-    org    : String,
-    token  : String,
-    bucket : String,
+    url: String,
+    org: String,
+    token: String,
+    bucket: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Deserialize, Debug)]
 struct DataStruct {
-    tag    : String,
+    tag: String,
     measure: i64,
-    label : Option<String>,
-    datetime : Option<String>
+    label: Option<String>,
+    datetime: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Deserialize, Debug)]
 struct MeasureStruct {
     topic: String,
     tagunits: String,
@@ -51,117 +46,86 @@ struct MeasureStruct {
     _records: Vec<DataStruct>,
 }
 
-async fn wr_nflx_msg( target_path : &str, measurement_path : &str, ca_path: &str ) -> Result<(), Box<dyn std::error::Error>> {
-    // send message
+async fn send_batch(client: &Client, endpoint: &FlxStruct, lines: &[String]) -> Result<(), Box<dyn std::error::Error>> {
+    let url = format!("{}/api/v2/write", endpoint.url.trim_end_matches('/'));
+    let body = lines.join("\n");
 
-    use futures::prelude::*;
-    use influxdb2::models::DataPoint;
-    use influxdb2::models::data_point::DataPointBuilder;
-    use influxdb2::models::data_point::DataPointError;
-    use influxdb2::Client;
-    //use time::{format_description::well_known::Rfc3339, PrimitiveDateTime, UtcOffset};
+    let res = client.post(&url)
+        .query(&[
+            ("org", &endpoint.org),
+            ("bucket", &endpoint.bucket),
+            ("precision", &"ns".to_string())
+        ])
+        .header("Authorization", format!("Token {}", endpoint.token))
+        .body(body)
+        .send()
+        .await?;
 
-
-    //ingest target endpoint
-    let endpoint = {
-        let endpoint = fs::read_to_string(target_path)
-            .expect("Unable to read file");
-        serde_json::from_str::<FlxStruct>(&endpoint).unwrap()
-    };
-
-    //let client = Client::new(&endpoint.url, &endpoint.org, &endpoint.token);
-    let client = Client::new_root_ca_pem(endpoint.url, endpoint.org, endpoint.token, ca_path);
-
-    // ingest measurements
-    // todo limit size main memory
-    let measurement = {
-        let measurement = fs::read_to_string(measurement_path)
-            .expect("Unable to read file");
-        serde_json::from_str::<MeasureStruct>(&measurement).unwrap()
-    };
-
-    let mut points = Vec::new();
-
-
-    // marshall message
-    for (i,item) in measurement._records.iter().enumerate() {
-
-        let mut pb = DataPointBuilder::default();
-
-        pb.measurement(&measurement.topic.clone());
-        pb.tag(measurement.tagunits.clone(), item.tag.clone());
-        pb.field(measurement.units.clone(), item.measure);
-
-        if item.datetime.is_some() {
-            let dt =  DateTime::parse_from_rfc3339(item.datetime.as_ref().unwrap()).unwrap();
-            pb.timestamp(dt.timestamp()*1_000_000_000);
-
-            //https://stackoverflow.com/questions/74935683/convert-utc-rfc3339-timestamp-to-local-time-with-the-time-crate
-            //OffsetDateTime::parse(iter.datetime.as_ref().unwrap(),&time_rfc3389);
-                // Parse the given zulu paramater.
-            //let zulu : &String=  iter.datetime.as_ref().unwrap();
-
-            // Determine Local TimeZone
-            //let utc_offset = UtcOffset::current_local_offset().unwrap();
-            /*{
-                Ok(utc_offset) => utc_offset,
-                Err(..) => return zulu.to_owned(),
-            }; */
-
-            //let zulu_parsed = PrimitiveDateTime::parse(zulu, &Rfc3339).unwrap().assume_utc();
-            /*{
-                Ok(zulu_parsed) => zulu_parsed.assume_utc(),
-                Err(..) => return zulu.to_owned(),
-            };*/
-
-            // Convert zulu to local time offset.
-            //let parsed = zulu_parsed.to_offset(utc_offset).unix_timestamp();
-
-            //let dt =  DateTime::parse_from_rfc3339(iter.datetime.as_ref().unwrap()).unwrap();
-            //pb.timestamp(parsed);
-        }
-        if item.label.is_some() {
-            let  label=  item.label.as_ref().unwrap();
-            pb.tag(  "label", label.clone());
-        }
-
-        let pr : Result<DataPoint, DataPointError> = pb.build();
-
-        //println!("{:?}",point);
-        let point: DataPoint = pr.unwrap();
-        points.push(point.to_owned());
-
-        if 99999 == i % 10000 {
-            log::debug!("point vec: {:#?}", &points);
-            client.write(&endpoint.bucket, stream::iter(points)).await?;
-            points = Vec::new();
-        }
-
-    }
-
-    log::debug!("point vec: {:#?}", &points);
-
-    //send message
-    Ok(client.write(&endpoint.bucket, stream::iter(points)).await?)
+    // Raise an error if the request failed (e.g. 401 Unauthorized, 400 Bad Request)
+    res.error_for_status()?;
+    Ok(())
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Error>  {
-    /* main routine */
-
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
-    let target_path = args.target_json;
-    let measurement_path = args.measurement_json;
-    let ca_path = args.ca_path;
 
     env_logger::Builder::new()
         .filter_level(args.verbose.log_level_filter())
         .init();
 
-    //write message
-    let my_result = block_on(wr_nflx_msg(&target_path, &measurement_path, &ca_path));
+    // Ingest target endpoint and measurements
+    let endpoint: FlxStruct = serde_json::from_str(&fs::read_to_string(&args.target_json)?)?;
+    let measurement: MeasureStruct = serde_json::from_str(&fs::read_to_string(&args.measurement_json)?)?;
 
-    my_result.unwrap();
+    // Read the custom CA certificate
+    let cert_bytes = fs::read(&args.ca_path)?;
+    let cert = Certificate::from_pem(&cert_bytes)?;
+
+    // Build the reqwest client using the custom Root CA
+    let client = Client::builder()
+        .add_root_certificate(cert)
+        .build()?;
+
+    let mut lines_batch = Vec::with_capacity(10000);
+
+    // Marshall messages to InfluxDB Line Protocol
+    for (i, item) in measurement._records.into_iter().enumerate() {
+        // Measurement and primary tag
+        // Format: measurement,tag=value
+        let mut line = format!("{},{}={}", measurement.topic, measurement.tagunits, item.tag);
+
+        // Optional label tag
+        if let Some(label) = item.label {
+            line.push_str(&format!(",label={}", label));
+        }
+
+        // Fields (i64 in line protocol requires an 'i' suffix)
+        // Format: [tags] field=valuei
+        line.push_str(&format!(" {}={}i", measurement.units, item.measure));
+
+        // Optional Timestamp
+        if let Some(dt_str) = item.datetime {
+            let dt = DateTime::parse_from_rfc3339(&dt_str)?;
+            let ns = dt.timestamp() * 1_000_000_000;
+            line.push_str(&format!(" {}", ns));
+        }
+
+        lines_batch.push(line);
+
+        // Batch write every 10,000 points
+        if (i + 1) % 10000 == 0 {
+            log::debug!("Writing batch of {} points", lines_batch.len());
+            send_batch(&client, &endpoint, &lines_batch).await?;
+            lines_batch.clear();
+        }
+    }
+
+    // Write any remaining messages
+    if !lines_batch.is_empty() {
+        log::debug!("Writing final batch of {} points", lines_batch.len());
+        send_batch(&client, &endpoint, &lines_batch).await?;
+    }
+
     Ok(())
 }
-

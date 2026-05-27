@@ -1,56 +1,28 @@
 [package]
 name        = "write_flux"
-version     = "0.0.10"
-keywords    = ["write_flux", "influxdb", "influxdb2", "influxdb-client"]
+version     = "0.1.10"
+keywords    = ["write_flux", "influxdb", "influxdb2", "reqwest"]
 description = "Influxdb2 point client"
-edition     = "2021"
+edition     = "2024"
 license     = "MIT OR Apache-2.0"
 authors     = [ "B3K7" ]
 
+[dependencies]
+chrono              = "0.4"
+clap                = { version = "4.1", features = ["derive"] }
+clap-verbosity-flag = "2.0"
+env_logger          = "0.10.0"
+log                 = "0.4"
+reqwest             = { version = "0.11", features = ["rustls-tls"] }
+serde               = { version = "1.0", features = ["derive"] }
+serde_json          = "1.0"
+tokio               = { version = "1.25", features = ["full"] }
+
 [profile.release]
-# https://github.com/johnthagen/min-sized-rust
-strip = "symbols"          # strip symbols
-opt-level = "z"            # optimize for size
-#opt-level =  3            # optimize for preformance
-lto = "fat"                # Link-time optimization (LTO)
-codegen-units = 1          # Sequential Link-time optimization
-target-cpu="native"        # Target the native CPU
-panic = "abort"            # don't bother backtracing
-
-[features]
-default     = ["native-tls"]
-native-tls  = ["reqwest/native-tls"]
-rustls      = ["reqwest/rustls-tls"]
-
-[dependencies] # In alphabetical order
-time          = {version = "0.3", features=["parsing","local-offset"]}
-clap          = { version = "4.1", features = ["derive", "cargo"] }
-clap-verbosity-flag = { version = "2.0" }
-env_logger    = { version = "0.10.0" }
-futures       = { version = "0.3" }
-influxdb2     = { path="./influxdb2", version = "0.3", features = ["rustls"], default-features = false }
-log           = { version = "0.4" }
-nom           = { version = "7.1" }
-opentelemetry = { version = "0.18" }
-prelude       = { version = "0.2" }
-reqwest       = { version = "0.11" , features = ["blocking","json"] }
-serde         = { version = "1.0" }
-serde_derive  = { version = "1.0"  }
-serde_json    = { version = "1.0" }
-tokio         = { version = "1.25", features = ["full"]  }
-chrono        = { version = "0.4" }
-
-[workspace]
-members = ["influxdb2"]
-influxdb2   = "https://github.com/3BK/influxdb2"
-
-
-[package.metadata.generate-rpm]
-assets = [
-    { source = "target/release/write_flux" ,dest = "/usr/bin/write_flux", mode = "0755" }
-]
-
-[package.metadata.deb]
-copyright = "(C) 2023 ALL RIGHTS RESERVED 3BK7"
-
+strip = "symbols"
+opt-level = "z"
+lto = "fat"
+codegen-units = 1
+target-cpu = "native"
+panic = "abort"
 

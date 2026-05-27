@@ -80,6 +80,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Read the custom CA certificate
     let cert_bytes = fs::read(&args.ca_path)?;
+    
+    // Parses the PEM file for the Rustls + aws-lc-rs backend
     let cert = Certificate::from_pem(&cert_bytes)?;
 
     // Build the reqwest client using the custom Root CA
@@ -91,20 +93,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Marshall messages to InfluxDB Line Protocol
     for (i, item) in measurement._records.into_iter().enumerate() {
-        // Measurement and primary tag
-        // Format: measurement,tag=value
         let mut line = format!("{},{}={}", measurement.topic, measurement.tagunits, item.tag);
 
-        // Optional label tag
         if let Some(label) = item.label {
             line.push_str(&format!(",label={}", label));
         }
 
-        // Fields (i64 in line protocol requires an 'i' suffix)
-        // Format: [tags] field=valuei
         line.push_str(&format!(" {}={}i", measurement.units, item.measure));
 
-        // Optional Timestamp
         if let Some(dt_str) = item.datetime {
             let dt = DateTime::parse_from_rfc3339(&dt_str)?;
             let ns = dt.timestamp() * 1_000_000_000;
